@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<products>
+  <product>
+    <sku>1001</sku>
+    <name>Produkt A</name>
+    <html-description>&lt;p&gt;Beskrivning av Produkt A.&lt;/p&gt;&lt;table cellspacing="2"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Höjd&lt;/td&gt;&lt;td&gt;100 mm&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bredd&lt;/td&gt;&lt;td&gt;200 mm&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+  <product>
+    <sku>1002</sku>
+    <name>Produkt B</name>
+    <html-description>&lt;p&gt;Beskrivning av Produkt B.&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Vikt&lt;/td&gt;&lt;td&gt;50 kg&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;Extra info&lt;/p&gt;&lt;table cellspacing="2"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Fakta B&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Höjd&lt;/td&gt;&lt;td&gt;500 mm&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Djup&lt;/td&gt;&lt;td&gt;300 mm&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+  <product>
+    <sku>1003</sku>
+    <name>Produkt C (bara i källfil)</name>
+    <html-description>&lt;p&gt;Produkt C.&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Data&lt;/td&gt;&lt;td&gt;Värde&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+  <product>
+    <sku>1004</sku>
+    <name>Produkt D</name>
+    <html-description>&lt;p&gt;Ingen tabell här.&lt;/p&gt;</html-description>
+  </product>
+</products>

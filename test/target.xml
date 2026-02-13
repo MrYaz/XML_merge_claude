@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<products>
+  <product>
+    <sku>1001</sku>
+    <name>Produkt A (målfil)</name>
+    <html-description>&lt;p&gt;Målets beskrivning av A.&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GAMMAL&lt;/td&gt;&lt;td&gt;DATA&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+  <product>
+    <sku>1002</sku>
+    <name>Produkt B (målfil)</name>
+    <html-description>&lt;p&gt;Målets beskrivning av B.&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GAMMAL TABELL 1&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;p&gt;Mellantext&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GAMMAL TABELL 2&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+  <product>
+    <sku>1005</sku>
+    <name>Produkt E (bara i målfil)</name>
+    <html-description>&lt;p&gt;Produkt E.&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;E-data&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+  <product>
+    <sku>1004</sku>
+    <name>Produkt D (målfil, källa saknar tabell)</name>
+    <html-description>&lt;p&gt;Produkt D mål.&lt;/p&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;D-data&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;</html-description>
+  </product>
+</products>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Produktflödes-matchare</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+            color: #1a1a2e;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .upload-box {
+            background: #fff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .upload-box:hover { border-color: #4a6fa5; }
+        .upload-box.loaded {
+            border-color: #22c55e;
+            border-style: solid;
+            background: #f0fdf4;
+        }
+        .upload-box h2 {
+            font-size: 1.05rem;
+            margin-bottom: 0.75rem;
+            color: #4a6fa5;
+        }
+        .upload-box input[type="file"] {
+            font-size: 0.9rem;
+        }
+        .file-info {
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 0.5rem;
+            min-height: 1.4em;
+        }
+        .process-btn {
+            display: block;
+            width: 100%;
+            padding: 0.9rem;
+            background: #4a6fa5;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .process-btn:hover:not(:disabled) { background: #3a5a8a; }
+        .process-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 2rem;
+            background: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .results h2 {
+            margin-bottom: 1rem;
+            color: #1a1a2e;
+            font-size: 1.2rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .stat-box {
+            background: #f8fafc;
+            padding: 0.9rem 0.5rem;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4a6fa5;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            background: #22c55e;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .download-btn:hover { background: #16a34a; }
+        .sku-list { margin-top: 1rem; }
+        .sku-list summary {
+            cursor: pointer;
+            color: #4a6fa5;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .sku-list ul {
+            max-height: 200px;
+            overflow-y: auto;
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+            columns: 2;
+        }
+        .sku-list li {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            padding: 0.1rem 0;
+        }
+        .hidden { display: none; }
+        .msg-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+        .msg-warning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 0.9rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .processing-text {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 1rem;
+        }
+        @media (max-width: 640px) {
+            .upload-section { grid-template-columns: 1fr; }
+            .stats { grid-template-columns: 1fr; }
+            .sku-list ul { columns: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XML Produktflödes-matchare</h1>
+        <p class="subtitle">
+            Matchar produkter via <code>&lt;sku&gt;</code> och kopierar den sista
+            <code>&lt;table&gt;</code> i <code>&lt;html-description&gt;</code>
+            från källfilen till målfilen.
+        </p>
+
+        <div class="upload-section">
+            <div class="upload-box" id="sourceBox">
+                <h2>Källfil</h2>
+                <input type="file" id="sourceFile" accept=".xml">
+                <p class="file-info" id="sourceInfo">Välj XML-fil med källdata</p>
+            </div>
+            <div class="upload-box" id="targetBox">
+                <h2>Målfil</h2>
+                <input type="file" id="targetFile" accept=".xml">
+                <p class="file-info" id="targetInfo">Välj XML-fil som ska uppdateras</p>
+            </div>
+        </div>
+
+        <button id="processBtn" class="process-btn" disabled>Bearbeta filer</button>
+
+        <div id="results" class="hidden"></div>
+    </div>
+
+    <script>
+        const sourceFileInput = document.getElementById('sourceFile');
+        const targetFileInput = document.getElementById('targetFile');
+        const processBtn = document.getElementById('processBtn');
+        const resultsDiv = document.getElementById('results');
+
+        let sourceText = null;
+        let targetText = null;
+        let targetFileName = 'resultat.xml';
+
+        function readFile(input, infoId, boxId, onDone) {
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const text = evt.target.result;
+                    const count = (text.match(/<product[\s>]/g) || []).length;
+                    document.getElementById(infoId).textContent =
+                        `${file.name} — ${count} produkter`;
+                    document.getElementById(boxId).classList.add('loaded');
+                    onDone(text, file.name);
+                };
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        readFile(sourceFileInput, 'sourceInfo', 'sourceBox', (text) => {
+            sourceText = text;
+            updateBtn();
+        });
+
+        readFile(targetFileInput, 'targetInfo', 'targetBox', (text, name) => {
+            targetText = text;
+            targetFileName = name.replace(/\.xml$/i, '') + '_uppdaterad.xml';
+            updateBtn();
+        });
+
+        function updateBtn() {
+            processBtn.disabled = !(sourceText && targetText);
+        }
+
+        processBtn.addEventListener('click', () => {
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '<p class="processing-text">Bearbetar&hellip;</p>';
+            setTimeout(() => {
+                try {
+                    const result = processFiles(sourceText, targetText);
+                    showResults(result);
+                } catch (err) {
+                    resultsDiv.innerHTML =
+                        `<div class="msg-error"><strong>Fel:</strong> ${esc(err.message)}</div>`;
+                }
+            }, 30);
+        });
+
+        /* ------------------------------------------------
+           Core logic
+           ------------------------------------------------ */
+
+        /**
+         * Extract the last <table ...>...</table> from an HTML string.
+         * Uses iterative regex to collect all matches, then returns the last one.
+         */
+        function extractLastTable(html) {
+            const re = /<table[\s\S]*?<\/table>/gi;
+            let last = null;
+            let m;
+            while ((m = re.exec(html)) !== null) {
+                last = m;
+            }
+            return last ? last[0] : null;
+        }
+
+        /**
+         * Replace the last <table> in `html` with `newTable`.
+         * If no table exists, append `newTable` before a trailing ]]> or at the end.
+         */
+        function replaceLastTable(html, newTable) {
+            const re = /<table[\s\S]*?<\/table>/gi;
+            let last = null;
+            let m;
+            while ((m = re.exec(html)) !== null) {
+                last = { idx: m.index, len: m[0].length };
+            }
+            if (last) {
+                return html.substring(0, last.idx) + newTable +
+                       html.substring(last.idx + last.len);
+            }
+            // No table found — append before trailing ]]> if present
+            const cdataClose = html.lastIndexOf(']]>');
+            if (cdataClose !== -1) {
+                return html.substring(0, cdataClose) + newTable + html.substring(cdataClose);
+            }
+            return html + newTable;
+        }
+
+        function processFiles(srcText, tgtText) {
+            const parser = new DOMParser();
+
+            // --- Parse source ---
+            const srcDoc = parser.parseFromString(srcText, 'text/xml');
+            if (srcDoc.querySelector('parsererror')) {
+                throw new Error(
+                    'Källfilen kunde inte tolkas som giltig XML. Kontrollera filformatet.');
+            }
+
+            // --- Parse target ---
+            const tgtDoc = parser.parseFromString(tgtText, 'text/xml');
+            if (tgtDoc.querySelector('parsererror')) {
+                throw new Error(
+                    'Målfilen kunde inte tolkas som giltig XML. Kontrollera filformatet.');
+            }
+
+            // --- Build source map: sku -> last table HTML ---
+            const sourceMap = {};
+            let srcProductCount = 0;
+            let srcTablesFound = 0;
+
+            srcDoc.querySelectorAll('product').forEach((p) => {
+                srcProductCount++;
+                const sku = p.querySelector('sku')?.textContent?.trim();
+                const descEl = p.querySelector('html-description');
+                if (!sku || !descEl) return;
+                const table = extractLastTable(descEl.textContent || '');
+                if (table) {
+                    sourceMap[sku] = table;
+                    srcTablesFound++;
+                }
+            });
+
+            // --- Process target ---
+            let tgtProductCount = 0;
+            let matchCount = 0;
+            let replacedCount = 0;
+            let appendedCount = 0;
+            const matchedSkus = [];
+
+            tgtDoc.querySelectorAll('product').forEach((p) => {
+                tgtProductCount++;
+                const sku = p.querySelector('sku')?.textContent?.trim();
+                if (!sku || !sourceMap[sku]) return;
+
+                const descEl = p.querySelector('html-description');
+                if (!descEl) return;
+
+                const oldContent = descEl.textContent || '';
+                const hadTable = extractLastTable(oldContent) !== null;
+                const newContent = replaceLastTable(oldContent, sourceMap[sku]);
+
+                descEl.textContent = newContent;
+                matchCount++;
+                matchedSkus.push(sku);
+                if (hadTable) { replacedCount++; } else { appendedCount++; }
+            });
+
+            // --- Serialize ---
+            let resultXml = new XMLSerializer().serializeToString(tgtDoc);
+
+            // Preserve original XML declaration
+            const origDecl = tgtText.match(/^(<\?xml[^?]*\?>)/);
+            const serDecl  = resultXml.match(/^(<\?xml[^?]*\?>)/);
+            if (origDecl && !serDecl) {
+                resultXml = origDecl[1] + '\n' + resultXml;
+            } else if (origDecl && serDecl) {
+                resultXml = resultXml.replace(serDecl[1], origDecl[1]);
+            }
+
+            // Remove spurious xmlns=""
+            resultXml = resultXml.replace(/ xmlns=""/g, '');
+
+            return {
+                resultXml,
+                srcProductCount,
+                tgtProductCount,
+                srcTablesFound,
+                matchCount,
+                replacedCount,
+                appendedCount,
+                matchedSkus
+            };
+        }
+
+        /* ------------------------------------------------
+           Display results
+           ------------------------------------------------ */
+
+        function showResults(r) {
+            const blob = new Blob([r.resultXml], { type: 'application/xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            let h = `<h2>Resultat</h2>`;
+
+            h += `<div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value">${r.srcProductCount}</div>
+                    <div class="stat-label">Produkter i källfil</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${r.tgtProductCount}</div>
+                    <div class="stat-label">Produkter i målfil</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${r.matchCount}</div>
+                    <div class="stat-label">SKU-matchningar</div>
+                </div>
+            </div>`;
+
+            h += `<div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value">${r.srcTablesFound}</div>
+                    <div class="stat-label">Tabeller i källfil</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${r.replacedCount}</div>
+                    <div class="stat-label">Tabeller ersatta</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">${r.appendedCount}</div>
+                    <div class="stat-label">Tabeller tillagda</div>
+                </div>
+            </div>`;
+
+            if (r.matchCount === 0) {
+                h += `<div class="msg-warning">
+                    Inga matchande SKU:er hittades mellan käll- och målfilen.
+                </div>`;
+            }
+
+            if (r.matchedSkus.length > 0) {
+                h += `<div class="sku-list"><details>
+                    <summary>Visa matchade SKU:er (${r.matchedSkus.length} st)</summary>
+                    <ul>${r.matchedSkus.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+                </details></div>`;
+            }
+
+            h += `<br><a href="${url}" download="${esc(targetFileName)}"
+                    class="download-btn">Ladda ned resultatfil</a>`;
+
+            resultsDiv.innerHTML = h;
+        }
+
+        function esc(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>
